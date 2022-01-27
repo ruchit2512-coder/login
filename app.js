@@ -25,8 +25,19 @@ console.log(static_path);
 
 app.get('/signin',auth,function(req,res){
     console.log("signin page");
-    res.render("signin");
-  });
+    res.redirect("signin.html");
+});
+
+app.get('/login',function(req,res){
+    console.log("login page");
+    res.redirect("login.html");
+});
+
+app.get('/register',function(req,res){
+    console.log("register page");
+    res.redirect("register.html");
+});
+
 
 
 app.post("/signin", async(req,res)=>{
@@ -77,20 +88,28 @@ app.post("/login", async(req,res)=>{
         const password = req.body.password;
 
         const user = await Signin.findOne({email : email})
-        const isMatch = await bcrypt.compare(password,user.password);
-        const token = await user.generateAuthToken();
+        console.log(user);
+        if(user){
+            const isMatch = await bcrypt.compare(password,user.password);
+            const token = await user.generateAuthToken();
 
-        if(isMatch){
-            res.cookie("jwt",token,{
-                expires : new Date(Date.now()+500000),
-                httpOnly : true
-            })
-            res.status(201).redirect("index.html");
+            if(isMatch){
+                res.cookie("jwt",token,{
+                    expires : new Date(Date.now()+500000),
+                    httpOnly : true
+                })
+                res.status(201).redirect("index.html");
+            }
+            else{
+                res.send("error");
+            }
         }
-        else{
-            res.send("error");
+        else {
+            res.redirect("register.html");
+            // let err = new Error("email is not matching");
+            // res.send(err);
         }
-
+        
     }
     catch(error){
         let err = new Error("Email is not present")
